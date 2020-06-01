@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+  deno-db:
+    image: mysql:5.7.12
+    container_name: deno-db
+    volumes:
+      - ./mysql:/tmp/database
+    command: mysqld --init-file="/tmp/database/init.sql"
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - backend
+  deno-app:
+    image: hayd/ubuntu-deno:1.0.2
+    restart: always
+    command: "run --allow-net --allow-read --allow-write index.ts"
+    tty: true
+    user: deno
+    container_name: deno-app
+    volumes:
+      - ./:/app
+    ports:
+      - 8000:8000
+    working_dir: /app/
+    depends_on:
+      - deno-db
+    networks:
+      - backend
+networks:
+  backend:
